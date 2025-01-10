@@ -43,7 +43,8 @@ function AdvancedSettingsComponent({dispatchConditions, conditions, hideButton})
 
     return (
         <BlockStack gap={"3"}>
-            {hideButton ? null : <Button fullWidth={false} plain removeUnderline onClick={() => setShowAdvancedSettings(!showAdvancedSettings)}>Advanced configurations</Button>}
+            <InlineStack align='center'>
+            {hideButton ? null : <Button fullWidth={false} variant='plain' onClick={() => setShowAdvancedSettings(!showAdvancedSettings)}>Advanced configurations</Button>}
             {showAdvancedSettings ?
                 <BlockStack gap={"200"}>
                     {conditions.map((condition, index) => {
@@ -86,6 +87,7 @@ function AdvancedSettingsComponent({dispatchConditions, conditions, hideButton})
                     </InlineStack>
                 </BlockStack> : null
             }
+            </InlineStack>
         </BlockStack>
     )
 }
