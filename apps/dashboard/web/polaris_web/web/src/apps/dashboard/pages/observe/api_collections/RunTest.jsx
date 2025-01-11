@@ -137,7 +137,7 @@ function RunTest({ endpoints, filtered, apiCollectionId, disabled, runTestFromOu
                 processMapCategoryToSubcategory[category] = [...mapCategoryToSubcategory[category]["all"]]
             })
         }
-
+        
         // Set if a test is selected or not
         Object.keys(processMapCategoryToSubcategory).map(category => {
             const selectedTests = []
@@ -341,7 +341,6 @@ function RunTest({ endpoints, filtered, apiCollectionId, disabled, runTestFromOu
             }
 
         })
-
         const filteredTests = testRun.selectedCategory.length > 0 ? testRun.tests[testRun.selectedCategory].filter(x => (x.label.toLowerCase().includes(searchValue.toLowerCase()) && filterFunc(x))) : []
         testRows = filteredTests.map(test => {
             const isCustom = test?.author !== "AKTO"
@@ -574,7 +573,7 @@ function RunTest({ endpoints, filtered, apiCollectionId, disabled, runTestFromOu
                 maxConcurrentRequestsOptions={maxConcurrentRequestsOptions}
                 slackIntegrated={slackIntegrated}
                 generateLabelForSlackIntegration={generateLabelForSlackIntegration} 
-                dispatchConditions={dispatchConditions} conditions={conditions}/>
+                />
             <Modal
                 activator={runTestRef}
                 open={active}

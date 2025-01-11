@@ -3,7 +3,6 @@ import { BlockStack, InlineGrid, Checkbox, TextField, Text } from '@shopify/pola
 import Dropdown from "../../../components/layouts/Dropdown";
 
 const RunTestConfiguration = ({ testRun, setTestRun, runTypeOptions, hourlyTimes, testRunTimeOptions, testRolesArr, maxConcurrentRequestsOptions, slackIntegrated, generateLabelForSlackIntegration }) => {
-    console.log("RunTestConfiguration", testRun);
     return (
         <BlockStack gap={"400"}>
             <InlineGrid gap={"400"} columns={"3"}>

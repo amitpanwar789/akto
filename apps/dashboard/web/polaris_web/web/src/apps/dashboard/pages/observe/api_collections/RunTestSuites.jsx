@@ -47,7 +47,7 @@ function RunTestSuites({ testSuiteModal, testSuiteModalToggle, testRun, setTestR
                         <BlockStack gap={500}>
                             <InlineStack align="space-between" gap={200}>
 
-                                <div style={{ minWidth: "79%" }}>
+                                <div style={{ minWidth: "82%" }}>
                                     <TextField
                                         prefix={<Icon source={SearchIcon} />}
                                         placeholder="Search"
