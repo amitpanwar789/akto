@@ -108,7 +108,6 @@ function RunTestSuites({ testSuiteModal, testSuiteModalToggle, parentTestRun, se
     const [shouldCallFunction, setShouldCallFunction] = useState(false);
 
     function handleTestSuiteRun(){
-        console.log("handleTestSuiteRun");
         setParentTestRun(testRun);
         setShouldCallFunction(true);
     }
