@@ -32,6 +32,7 @@ const RunTestIndividual = ({
     collectionsMap,
     apiCollectionId,
     closeRunTest,
+    setTestMode,
 }) => {
     const navigate = useNavigate();
     const [showFiltersOption, setShowFiltersOption] = useState(false);
@@ -88,6 +89,7 @@ const RunTestIndividual = ({
                 setTestRun(prev => ({
                     ...parentTestRun,
                     tests: updatedTests,
+                    testName:testIdConfig.name
                 }));
             }
         }
@@ -227,6 +229,7 @@ const RunTestIndividual = ({
         })
 
         const filteredTests = testRun.selectedCategory.length > 0 ? testRun.tests[testRun.selectedCategory]?.filter(x => (x.label.toLowerCase().includes(searchValue.toLowerCase()) && filterFunc(x))) : []
+        console.log("filteredTests ",filteredTests)
         testRows = filteredTests?.map(test => {
             const isCustom = test?.author !== "AKTO"
             const label = (
@@ -401,7 +404,7 @@ const RunTestIndividual = ({
                                 </div>
                                 <Divider />
                                 <div style={{ maxHeight: "35vh", overflowY: "auto", paddingTop: "5px" }}>
-                                    <DataTable columnContentTypes={['text']} headings={[]} rows={testRows} hoverable={false} increasedTableDensity />
+                                {testRows?<DataTable columnContentTypes={['text']} headings={[]} rows={testRows}  increasedTableDensity />:<></>}
                                 </div>
                             </div>
                         </div>

@@ -1,11 +1,9 @@
 import { VerticalStack, Modal, TextField, Button, Text, HorizontalStack, Collapsible, Badge, Pagination, TextContainer, Icon, Scrollable, Checkbox, Box, Tooltip, Card, MediaCard } from "@shopify/polaris";
 import { TickMinor, CancelMajor, SearchMinor } from "@shopify/polaris-icons";
 import { useEffect, useRef, useState } from "react";
-import data from "./dummyData.json"
 import "./run_test_suites.css"
 import RunTestConfiguration from "./RunTestConfiguration";
 import AdvancedSettingsComponent from "./component/AdvancedSettingsComponent";
-import { use } from "react";
 
 
 
@@ -13,9 +11,10 @@ function RunTestSuites({ testSuiteModal, testSuiteModalToggle, parentTestRun, se
 
     const [owaspTop10, owaspTop10Toggle] = useState(true);
     const [openConfigurations, openConfigurationsToggle] = useState(false);
-    const [testSuite, setTestSuite] = useState(true);
     const [selectedTestSuites, setSelectedTestSuites] = useState([]);
     const [testRun, setTestRun] = useState({...initialState});
+    const [testNames, setTestNames] = useState("");
+    const [searchValue, setSearchValue] = useState("");
 
     const owaspTop10List = {
         "Broken Object Level Authorization": ["BOLA"],
@@ -66,8 +65,8 @@ function RunTestSuites({ testSuiteModal, testSuiteModalToggle, parentTestRun, se
                 }
 
                 for (let key of keys1) {
-                    const arr1 = obj1[key].map(obj => JSON.stringify(obj)).sort(); // O(m log m)
-                    const arr2 = obj2[key].map(obj => JSON.stringify(obj)).sort(); // O(m log m)
+                    const arr1 = obj1[key].map(obj => JSON.stringify(obj)).sort(); 
+                    const arr2 = obj2[key].map(obj => JSON.stringify(obj)).sort(); 
 
                     if (arr1.length !== arr2.length || arr1.some((item, index) => item !== arr2[index])) {
                         return false;
@@ -83,7 +82,9 @@ function RunTestSuites({ testSuiteModal, testSuiteModalToggle, parentTestRun, se
                 setTestRun(prev => ({
                     ...parentTestRun,
                     tests: updatedTests,
+                    testName:testIdConfig.name
                 }));
+                setTestNames(testIdConfig.name)
             }
         }
         else {
@@ -105,17 +106,15 @@ function RunTestSuites({ testSuiteModal, testSuiteModalToggle, parentTestRun, se
         });
     }, [parentTestRun]);
 
-    const [shouldCallFunction, setShouldCallFunction] = useState(false);
 
     function handleTestSuiteRun(){
-        setParentTestRun(testRun);
-        setShouldCallFunction(true);
+        setParentTestRun(prev => {
+            const updatedState = { ...testRun };
+            handleRun(updatedState); 
+            return updatedState;
+        });
     }
 
-    useEffect(() => {
-        if(shouldCallFunction) handleRun();
-        setShouldCallFunction(false);
-    }, [shouldCallFunction]);
 
     function handleTestSuiteSelection(key, data) {
         let updatedSelectedTestSuites;
@@ -176,6 +175,7 @@ function RunTestSuites({ testSuiteModal, testSuiteModalToggle, parentTestRun, se
         });
         return count;
     }
+
 
     function checkedSelected(data) {
         let hasNonEmptyCategory = false;
@@ -284,6 +284,8 @@ function RunTestSuites({ testSuiteModal, testSuiteModalToggle, parentTestRun, se
                                     <TextField
                                         prefix={<Icon source={SearchMinor} />}
                                         placeholder="Search"
+                                        value={searchValue}
+                                        onChange={(value) => setSearchValue(value)}
                                     />
                                 </div>
                                 <HorizontalStack gap={4}>
@@ -328,7 +330,7 @@ function RunTestSuites({ testSuiteModal, testSuiteModalToggle, parentTestRun, se
                                                 }}
                                             >
 
-                                                {Object.entries(owaspTop10List).map(([key, value], index) => (
+                                                {Object.entries(owaspTop10List).map(([key, value]) => (
                                                     renderAktoTestSuites({ key, value })
                                                 ))}
 
