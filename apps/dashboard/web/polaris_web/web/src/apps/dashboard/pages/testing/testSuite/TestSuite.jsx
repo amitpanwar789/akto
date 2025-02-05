@@ -8,6 +8,7 @@ import LocalStore from "../../../../main/LocalStorageStore";
 import useTable from "../../../components/tables/TableContext"
 import func from "../../../../../util/func"
 import ShowListInBadge from "../../../components/shared/ShowListInBadge"
+import api from "../api"
 
 
 
@@ -25,10 +26,12 @@ function TestSuite() {
 
     const { tabsInfo } = useTable()
     const definedTableTabs = ['All', 'Custom'];
-    const tableTabs = func.getTableTabsContent(definedTableTabs, { "all": customTestSuiteData.length, "custom": customTestSuiteData.length }, setSelectedTab, selectedTab, tabsInfo)
+    const tableCountObj = func.getTabsCount(definedTableTabs, data)
+    const tableTabs = func.getTableTabsContent(definedTableTabs, tableCountObj, setSelectedTab, selectedTab, tabsInfo)
+    const [fetchAgain, setFetchAgain] = useState(true)
 
 
-   
+
     const headings = [
         {
             title: "Template name",
@@ -62,12 +65,15 @@ function TestSuite() {
         setSelectedTestSuite(data);
     };
 
-    useEffect(() => {
-        const updatedData = customTestSuiteData.map(x => {
+    const fetchData = async () => {
+        const data = await api.fetchAllTestSuites();
+
+        console.log("fetched data", data);
+        const updatedData = data.map(x => {
             const categoriesCoveredSet = new Set();
             
             const subCategoryMap = LocalStore.getState().subCategoryMap;
-            const testSuiteTestSelectedList = new Set(x?.tests);
+            const testSuiteTestSelectedList = new Set(x?.subCategoryList);
 
             Object.entries(subCategoryMap).forEach(([key, tests]) => {
                 if(testSuiteTestSelectedList.has(tests.name)) {
@@ -78,7 +84,11 @@ function TestSuite() {
             const categoriesCoveredArr = [...categoriesCoveredSet];
 
             return {
-                ...x,
+                name: x.name,
+                id: x.id,
+                createdByName: x.createdByName,
+                testCount: x.subCategoryList.length,
+                tests: x.subCategoryList,
                 categoriesCovered: (
                     <ShowListInBadge
                         itemsArr={categoriesCoveredArr}
@@ -105,7 +115,12 @@ function TestSuite() {
         if (selectedTab !== "all") { 
             setSelectedTab("all"); 
         }
-    }, [LocalStore.getState().customTestSuites])
+
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, [])
 
 
     const [selected, setSelected] = useState(0)
@@ -119,7 +134,6 @@ function TestSuite() {
     }
 
     const promotedBulkActions = (val) => {
-        console.log(val);
         let actions = [
             {
                 content: 'Export as CSV',
@@ -131,28 +145,29 @@ function TestSuite() {
 
 
     const components = [
-        <GithubSimpleTable 
-            sortOptions={sortOptions} 
-            tableTabs={tableTabs} 
-            loading={tableLoading} 
-            selected={selected} 
+        <GithubSimpleTable
+            sortOptions={sortOptions}
+            tableTabs={tableTabs}
+            loading={tableLoading}
+            selected={selected}
             mode={IndexFiltersMode.Default}
-            onSelect={handleSelectedTab} 
-            onRowClick={handleRowClick} 
-            resourceName={resourceName} 
-            useNewRow={true} 
-            headers={headers} 
-            headings={headings} 
-            data={data[selectedTab]} 
+            onSelect={handleSelectedTab}
+            onRowClick={handleRowClick}
+            resourceName={resourceName}
+            useNewRow={true}
+            headers={headers}
+            headings={headings}
+            data={data[selectedTab]}
             promotedBulkActions={promotedBulkActions}
             selectable={true}
         />,
-        <FlyLayoutSuite 
-            selectedTestSuite={selectedTestSuite} 
+        <FlyLayoutSuite
+            selectedTestSuite={selectedTestSuite}
             setSelectedTestSuite={setSelectedTestSuite}
-            customTestSuiteData={customTestSuiteData} 
-            show={show} 
+            customTestSuiteData={customTestSuiteData}
+            show={show}
             setShow={setShow}
+            onChange={fetchData}
         />
     ]
 
@@ -165,7 +180,7 @@ function TestSuite() {
                     docsUrl={"https://docs.akto.io/api-inventory/concepts"}
                 />
             }
-            primaryAction={<Button primary onClick={() => {setShow(true) }}><div data-testid="new_test_role_button">Create new</div></Button>}
+            primaryAction={<Button primary onClick={() => { setSelectedTestSuite(null); setShow(true) }}><div data-testid="new_test_role_button">Create new</div></Button>}
             components={components}
         >
 

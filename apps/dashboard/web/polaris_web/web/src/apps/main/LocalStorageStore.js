@@ -2,19 +2,42 @@ import {create} from "zustand"
 import {devtools, persist, createJSONStorage} from "zustand/middleware"
 
 const initialState = {
-    subCategoryMap: {},
-    categoryMap: {},
-    sendEventOnLogin: false,
-    defaultIgnoreSummaryTime: 2 * 60 * 60
+  subCategoryMap: {},
+  categoryMap: {},
+  sendEventOnLogin: false,
+  defaultIgnoreSummaryTime: 2 * 60 * 60,
+  customTestSuites: []
 };
 
 let localStore = (set) => ({
-    ...initialState,
-    setSubCategoryMap: (subCategoryMap) => set({ subCategoryMap }),
-    setCategoryMap: (categoryMap) => set({ categoryMap }),
-    setSendEventOnLogin: (sendEventOnLogin) => set({ sendEventOnLogin }),
-    setDefaultIgnoreSummaryTime: (val) => set({val}),
-    resetStore: () => set(initialState), // Reset function
+  ...initialState,
+  setSubCategoryMap: (subCategoryMap) => set({ subCategoryMap }),
+  setCategoryMap: (categoryMap) => set({ categoryMap }),
+  setSendEventOnLogin: (sendEventOnLogin) => set({ sendEventOnLogin }),
+  setDefaultIgnoreSummaryTime: (val) => set({val}),
+  resetStore: () => set(initialState), // Reset function
+  addCustomTestSuite: (newSuite) => set((state) => {
+    const existingIndex = state.customTestSuites.findIndex(
+        (suite) => suite.name === newSuite.name
+    );
+
+    // If the suite already exists, update it
+    if (existingIndex !== -1) {
+        const updatedSuites = [...state.customTestSuites];
+        updatedSuites[existingIndex] = newSuite;
+        return { customTestSuites: updatedSuites };
+    }
+
+    // If it doesn't exist, add it
+    return {
+        customTestSuites: [...state.customTestSuites, newSuite],
+    };
+}),
+
+
+  removeCustomTestSuite: (name) => set((state) => ({
+    customTestSuites: state.customTestSuites.filter(suite => suite.name !== name)
+  })),
 })
 
 localStore = devtools(localStore)

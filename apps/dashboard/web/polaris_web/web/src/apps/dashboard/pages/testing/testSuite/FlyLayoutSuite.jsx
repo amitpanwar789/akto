@@ -7,18 +7,21 @@ import transform from "../../testing/transform";
 import LocalStore from "../../../../main/LocalStorageStore";
 import TestSuiteRow from "./TestSuiteRow";
 import func from "../../../../../util/func";
+import api from "../api";
 
 
 function FlyLayoutSuite(props) {
-    const {show, setShow, width, selectedTestSuite,setSelectedTestSuite} = props;
+    const {show, setShow, width, selectedTestSuite,setSelectedTestSuite,onChange} = props;
     const [testSuiteName, setTestSuiteName] = useState("");
     const [testSearchValue, setTestSearchValue] = useState("");
     const [categories, setCategories] = useState([]);
 
     const handleExit = () => {
-        setSelectedTestSuite(null)
+        //setSelectedTestSuite(null)
         setShow(false);
     }
+
+
     useEffect(() => {
         if (selectedTestSuite) {
             setCategories(prev => {
@@ -54,7 +57,6 @@ function FlyLayoutSuite(props) {
 
 
     const fetchData = async () => {
-        console.log("fetching data")
         let metaDataObj = {
             categories: [],
             subCategories: [],
@@ -86,7 +88,7 @@ function FlyLayoutSuite(props) {
 
 
 
-    const handleTestSuiteSave = () => {
+    const handleTestSuiteSave = async () => {
         if(!testSuiteName || testSuiteName === "") {
             func.setToast(true, true, "Test Suite Name cannot be empty");
             return ;
@@ -101,17 +103,47 @@ function FlyLayoutSuite(props) {
             });
 
         });
+        let hasChanged = false;
+        if(!selectedTestSuite || testSuiteName !== selectedTestSuite.name) hasChanged = true;
 
-        let newSuite = {
-            name: testSuiteName,
-            id: testSuiteName,
-            tests: selectedTestSuiteTests,
-            testCount: selectedTestSuiteTests.length
+        function haveSameElements(array1, array2) {
+            // If lengths are different, arrays cannot be the same
+            if (array1.length !== array2.length) {
+                return false;
+            }
+        
+            const countMap = new Map();
+        
+            // Increment counts for elements in the first array
+            for (const item of array1) {
+                countMap.set(item, (countMap.get(item) || 0) + 1);
+            }
+        
+            // Decrement counts for elements in the second array
+            for (const item of array2) {
+                if (!countMap.has(item)) {
+                    return false; // Element not found
+                }
+                countMap.set(item, countMap.get(item) - 1);
+                if (countMap.get(item) === 0) {
+                    countMap.delete(item); // Clean up zero counts
+                }
+            }
+        
+            // If the map is empty, arrays are identical
+            return countMap.size === 0;
         }
-        console.log("done", newSuite)
-        LocalStore.getState().addCustomTestSuite(newSuite);
+        
+        if(!selectedTestSuite || !haveSameElements(selectedTestSuite.tests, selectedTestSuiteTests)) hasChanged = true;
+
+        if(!hasChanged) { handleExit(); return; }
+        
+        if(selectedTestSuite) {
+            await api.modifyTestSuite(selectedTestSuite.id, testSuiteName, selectedTestSuiteTests);
+        }
+        else await api.createNewTestSuite(testSuiteName, selectedTestSuiteTests);
+        onChange();
         handleExit();
-        // window.location.reload();
 
     }
 
@@ -124,7 +156,7 @@ function FlyLayoutSuite(props) {
         filteredCategories = categories.filter(category => {
             if (category.displayName.toLowerCase().includes(testSearchValue.toLowerCase())) return true;
             else {
-                let tests = category.value.tests.filter(test => test.label.toLowerCase().includes(testSearchValue.toLowerCase()));
+                let tests = category.tests.filter(test => test.label.toLowerCase().includes(testSearchValue.toLowerCase()));
                 if (tests.length > 0) return true;
                 else return false;
             }
